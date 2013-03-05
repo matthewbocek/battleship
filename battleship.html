@@ -1,0 +1,126 @@
+<!Doctype html>
+<head>
+<style type="text/css">
+	* {margin:0;}
+	
+	input {margin-right:2px;}
+	
+	#ocean {
+		border: 1px solid black;
+	}
+
+</style>
+
+<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+<script src="bs_functions.js" type="text/javascript"></script>
+<script src="game.js" type="text/javascript"></script>
+<script src="ship.js" type="text/javascript"></script>
+<script src="tile.js" type="text/javascript"></script>
+
+</head>
+<body>
+<div id="controls">
+	<input type="button" value="Open Fire" onclick="setListener('fire')" />
+	<input type="button" value="Place Carrier" onclick="setListener('placeShipStart',5)" />
+	<input type="button" value="Place Submarine" onclick="setListener('placeShipStart',3)" />
+</div>
+<div id="gamespace">
+	<canvas id="ocean" width="800" height="600"></canvas>
+</div>
+	
+<script type = "text/javascript">
+	var g = new Game(9,12,"ships","rules");
+	
+	var ocean = g.board;
+	var c = g.context;
+	
+	var w = g.w;
+	var h = g.h;
+	
+	console.log("t: "+  w.total+ " c: " + w.count + " s:" + w.single);
+	console.log("t: "+  h.total+ " c: " + h.count + " s:" + h.single);
+	
+	var min; //less than half the size of the one square of the smaller dimension, used for drawing circles.
+	if (w.single>h.single)
+		min = h.single;
+	else
+		min = w.single;
+
+	var clickListener = g.clickListener; //the current activity taken on click
+	var moveListener = g.clickListener; //the current activity taken on move
+	//drawGrid();
+	
+	$(ocean).on('click',fire);
+	
+	function fire(event){
+		var target = getMouseSquare(ocean,event);//get the square clicked on
+		console.log('x: ' + target.x);
+		console.log('y: ' + target.y);
+		
+		c.beginPath();		
+		c.arc(target.x+w.single/2,target.y+h.single/2,min,0,2*Math.PI);
+		c.stroke(); //draw a circle
+		if (0.3 > Math.random()) { //simulates random hits
+			c.fillStyle = '#ff0000';
+			c.fill();
+			console.log('hit');
+		}
+	}
+	
+	function placeShipStart(event) { 
+		var origin = getMousePos(ocean,event); //get the lcoation inside the canvas
+		var square = getMouseSquare(ocean,event);//get the location INSIDE the canvas
+		
+		$(ocean).off('click');
+		$(ocean).on('mousemove',{origin:origin,square:square,size:event.data.size},drawShip);
+		$(ocean).on('click',function(){ setListener('placeShipEnd') });
+		
+		c.beginPath();
+		c.fillStyle = '#cccccc';
+		c.fillRect(square.x,square.y,event.data.size*w.single,(h.single));
+	}
+
+	function drawShip(event) {
+		console.log('draw');
+		var size = event.data.size;
+		var origin = event.data.origin;
+		var square = event.data.square;
+		var currentPos = getMousePos(ocean,event);
+		var direction;
+		var dDir = checkDirection(origin.x,origin.y,currentPos.x,currentPos.y);
+		
+		if (dDir != direction) {
+			direction = dDir; 
+			c.clearRect(0,0,w.total,h.total);
+			drawGrid();
+			c.beginPath();
+			c.fillStyle = '#cccccc';
+			
+			switch (direction) {
+				case 'right':
+					c.fillRect(square.x,square.y,size*(w.single),(h.single));
+					console.log('R');
+					break;
+				case 'down':
+					c.fillRect(square.x,square.y,(w.single),size*(h.single));
+					console.log('D');
+					break;
+				case 'left':	 
+					c.fillRect(square.x-(size-1)*(w.single),square.y,size*(w.single),(h.single));
+					console.log('L');
+					break;
+				case 'up':
+					c.fillRect(square.x,square.y-(size-1)*(h.single),(w.single),size*(h.single));
+					console.log('U');
+					break;
+			}
+		}
+	}
+
+
+
+
+
+</script>
+</body>
+</html>
