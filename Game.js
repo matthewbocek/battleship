@@ -1,6 +1,6 @@
 function Game(countOfX,countOfY,ships,rules) {
 	var board = document.getElementById('ocean');
-	var context = board.getContext('2d');
+	var context = board.getContext('2d'); //should tie to view
 	
 	var w = {
 		'total' : board.width,			//total width (in px)
@@ -28,6 +28,4 @@ function Game(countOfX,countOfY,ships,rules) {
 			console.log("x" + iOfX + "y" + iOfY);
 		}
 	}
-	
-	drawGrid(context,'background');
 }
